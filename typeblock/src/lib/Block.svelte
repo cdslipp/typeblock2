@@ -1,4 +1,6 @@
 <script>
+	import Trix from './Trix.svelte';
+
 	let { content, active = false } = $props();
 
 	let editing = $state(false);
@@ -11,6 +13,9 @@
 				// Focus logic here
 			});
 		}
+		if (!active && editing) {
+			exitEditMode();
+		}
 	});
 
 	function exitEditMode() {
@@ -18,21 +23,30 @@
 		// Emit update event
 	}
 
-	$effect(() => {
-		if (!active && editing) {
-			exitEditMode();
-		}
-	});
+	function handleBlockClick() {
+		console.log('Block was clicked');
+		active = true;
+	}
 </script>
 
-{#if editing}
-	<!-- Active Trix Editor instance here -->
-	<trix-editor ... />
-{:else}
-	<!-- Display static text content -->
-	<div on:click={() => (active = true)}>{content}</div>
-{/if}
+<div class="block" on:click={handleBlockClick}>
+	{#if editing}
+		<!-- Active Trix Editor instance here -->
+		<Trix bind:value={content} />
+	{:else}
+		<!-- Display static text content -->
+		<div>{@html content}</div>
+	{/if}
+</div>
 
 <style>
-	/* Your styling */
+	.block {
+		background: grey;
+		height: 100%;
+		min-height: 100px;
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		margin: 1rem;
+	}
 </style>
