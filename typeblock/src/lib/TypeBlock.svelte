@@ -22,7 +22,7 @@
 </article>`; // Your HTML document as string
 	let blocks = $state([]);
 
-	let activeBlockId = blocks[0]?.id;
+	let activeBlockId = $state(null);
 
 	$effect(() => {
 		parseHTMLDocument(documentHTML);
@@ -58,20 +58,28 @@
 		}
 		// Handle other global shortcuts
 	}
+
+	// This function is triggered on block click.
+	function setActiveBlock(id) {
+		activeBlockId = id; // Reactive assignment triggers UI updates.
+	}
 </script>
 
-<div>
+<div id="typeblock">
 	{#each blocks as block (block.id)}
 		<Block
+			{block}
 			key={block.id}
-			content={block.content}
 			active={block.id === activeBlockId}
-			on:activate={() => (activeBlockId = block.id)}
-			on:update={(e) => updateBlock(block.id, e.detail.content)}
+			on:setActiveBlock={() => setActiveBlock(block.id)}
 		/>
 	{/each}
 </div>
 
 <style>
-	/* Your styling */
+	#typeblock {
+		display: flex;
+		flex-direction: column;
+		width: 1000px;
+	}
 </style>

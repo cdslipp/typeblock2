@@ -4,6 +4,18 @@
 	let { value = $bindable('<strong>Initial</strong>') } = $props();
 	let editorElement;
 
+	function onEditorUpdate(event) {
+		console.log('Update');
+	}
+	function onEditorKeyDown(event) {
+		if (event.key === 'Enter') {
+			event.preventDefault();
+		}
+	}
+	function onEditorFocus(event) {
+		console.log('Focus');
+	}
+
 	$effect(() => {
 		import('trix')
 			.then(() => {

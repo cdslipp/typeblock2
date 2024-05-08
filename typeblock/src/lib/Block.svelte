@@ -1,20 +1,21 @@
 <script>
 	import Trix from './Trix.svelte';
+	import { createEventDispatcher } from 'svelte';
 
-	let { content, active = false } = $props();
+	let { block, content, active = $bindable(false) } = $props();
 
 	let editing = $state(false);
 
+	let dispatch = createEventDispatcher();
+
 	// Emit an activate event when the block becomes active
 	$effect(() => {
-		if (active && !editing) {
+		editing = active;
+		if (active) {
 			editing = true;
-			setTimeout(() => {
-				// Focus logic here
-			});
-		}
-		if (!active && editing) {
-			exitEditMode();
+			// Focus logic here, if necessary
+		} else {
+			editing = false;
 		}
 	});
 
@@ -22,20 +23,16 @@
 		editing = false;
 		// Emit update event
 	}
-
-	function handleBlockClick() {
-		console.log('Block was clicked');
-		active = true;
+	function handleClick() {
+		dispatch('setActiveBlock');
 	}
 </script>
 
-<div class="block" on:click={handleBlockClick}>
+<div class="block" on:click={handleClick}>
 	{#if editing}
-		<!-- Active Trix Editor instance here -->
-		<Trix bind:value={content} />
+		<Trix bind:value={block.content} />
 	{:else}
-		<!-- Display static text content -->
-		<div>{@html content}</div>
+		{@html block.content}
 	{/if}
 </div>
 
