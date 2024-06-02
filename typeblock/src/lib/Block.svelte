@@ -1,26 +1,21 @@
-<!--Block.svelte-->
 <script>
 	import { createEventDispatcher } from 'svelte';
-
-	let { value = $bindable(), active = $bindable(false) } = $props();
-
+	let { value = $bindable(''), active = $bindable(false), block } = $props();
 	let editing = $state(false);
-
 	let dispatch = createEventDispatcher();
-
 	let editorElement;
 
 	function onEditorUpdate(event) {
-		console.log('Updating in block');
 		value = event.target.innerHTML;
-		console.log(event.target.innerHTML);
-		console.log(value);
+		dispatch('valueChange', value);
 	}
+
 	function onEditorKeyDown(event) {
 		if (event.key === 'Enter') {
 			event.preventDefault();
 		}
 	}
+
 	function onEditorFocus(event) {
 		console.log('Focus');
 	}
@@ -29,13 +24,13 @@
 		editing = active;
 		if (active) {
 			editing = true;
-			// Focus logic here, if necessary
 		} else {
 			editing = false;
 		}
+
 		import('trix')
 			.then(() => {
-				editorElement = document.querySelector('trix-editor');
+				editorElement = document.querySelector(`trix-editor[data-id="${block.id}"]`);
 				if (editorElement) {
 					editorElement.addEventListener('trix-change', onEditorUpdate);
 					editorElement.addEventListener('keydown', onEditorKeyDown);
@@ -55,16 +50,11 @@
 		};
 	});
 
-	function exitEditMode() {
-		editing = false;
-		// Emit update event
-	}
 	function handleClick() {
 		dispatch('setActiveBlock');
 	}
 </script>
 
-<p>{@html value}</p>
 <div class="block" on:click={handleClick}>
 	{#if editing}
 		<div class="editorContainer">
@@ -74,6 +64,7 @@
 					toolbar="toolbar"
 					input="editor-content"
 					class="trix-content editor"
+					data-id={block.id}
 					autofocus
 				/>
 				<input id="editor-content" bind:value name="content" type="hidden" />
@@ -100,6 +91,7 @@
 		height: 100%;
 		border: 1px solid #ccc;
 	}
+
 	.editorWrapper {
 		height: 100%;
 	}
@@ -107,6 +99,7 @@
 	trix-toolbar {
 		display: none;
 	}
+
 	:global(.trix-content) {
 		height: 100%;
 		min-height: 100px;
@@ -114,11 +107,13 @@
 		outline: none;
 		line-height: 1.5;
 	}
+
 	:global(.trix-content *) {
 		box-sizing: border-box;
 		margin: 0;
 		padding: 0;
 	}
+
 	:global(.trix-content h1) {
 		font-size: 1.8rem;
 		margin: 0;

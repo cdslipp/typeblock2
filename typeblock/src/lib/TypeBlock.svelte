@@ -21,22 +21,28 @@
         <p>Contributions are welcome! Please read the contribution guide to learn how you can contribute to this project.</p>
     </section>
 </article>`; // Your HTML document as string
-	let blocks = $state([{ id: 1, content: 'Test' }]);
+	let blocks = $state([]);
+
+	if (blocks.length === 0) {
+		parseHTMLDocument(documentHTML);
+	}
 
 	let editorValue = $state('This is the inital value');
 
 	let activeBlockId = $state(null);
 
 	function parseHTMLDocument(html) {
-		const parser = new DOMParser();
-		const doc = parser.parseFromString(html, 'text/html');
-		const sections = doc.querySelectorAll('section');
-		blocks = Array.from(sections).map((section, index) => {
-			return {
-				id: index + 1,
-				content: section.innerHTML
-			};
-		});
+		if (browser) {
+			const parser = new DOMParser();
+			const doc = parser.parseFromString(html, 'text/html');
+			const sections = doc.querySelectorAll('section');
+			blocks = Array.from(sections).map((section, index) => {
+				return {
+					id: index + 1,
+					content: section.innerHTML
+				};
+			});
+		}
 	}
 
 	if (browser) {
@@ -51,7 +57,7 @@
 		if (event.key === 'Enter') {
 			event.preventDefault();
 			const newBlockIndex = blocks.findIndex((block) => block.id === activeBlockId) + 1;
-			const newBlock = { id: Date.now(), content: '' };
+			const newBlock = { id: blocks.length + 1, content: '' };
 			blocks = [...blocks.slice(0, newBlockIndex), newBlock, ...blocks.slice(newBlockIndex)];
 			activeBlockId = newBlock.id;
 		}
@@ -77,9 +83,9 @@
 	{#each blocks as block (block.id)}
 		<!-- {block.content} -->
 		<Block
-			bind:value={editorValue}
-			key={block.id}
+			{block}
 			active={block.id === activeBlockId}
+			on:valueChange={(e) => handleValueChange(block.id, e.detail)}
 			on:setActiveBlock={() => setActiveBlock(block.id)}
 		/>
 	{/each}
