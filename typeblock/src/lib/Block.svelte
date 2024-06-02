@@ -1,6 +1,7 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
-	let { value = $bindable(''), active = $bindable(false), block } = $props();
+	import { browser } from '$app/environment';
+	let { value = $bindable(block.content), active = $bindable(false), block } = $props();
 	let editing = $state(false);
 	let dispatch = createEventDispatcher();
 	let editorElement;
@@ -28,26 +29,28 @@
 			editing = false;
 		}
 
-		import('trix')
-			.then(() => {
-				editorElement = document.querySelector(`trix-editor[data-id="${block.id}"]`);
-				if (editorElement) {
-					editorElement.addEventListener('trix-change', onEditorUpdate);
-					editorElement.addEventListener('keydown', onEditorKeyDown);
-					editorElement.addEventListener('focus', onEditorFocus);
-				}
-			})
-			.catch((error) => {
-				console.error('Error loading Trix:', error);
-			});
+		if (browser) {
+			import('trix')
+				.then(() => {
+					editorElement = document.querySelector(`trix-editor[data-id="${block.id}"]`);
+					if (editorElement) {
+						editorElement.addEventListener('trix-change', onEditorUpdate);
+						editorElement.addEventListener('keydown', onEditorKeyDown);
+						editorElement.addEventListener('focus', onEditorFocus);
+					}
+				})
+				.catch((error) => {
+					console.error('Error loading Trix:', error);
+				});
 
-		return () => {
-			if (editorElement) {
-				editorElement.removeEventListener('trix-change', onEditorUpdate);
-				editorElement.removeEventListener('keydown', onEditorKeyDown);
-				editorElement.removeEventListener('focus', onEditorFocus);
-			}
-		};
+			return () => {
+				if (editorElement) {
+					editorElement.removeEventListener('trix-change', onEditorUpdate);
+					editorElement.removeEventListener('keydown', onEditorKeyDown);
+					editorElement.removeEventListener('focus', onEditorFocus);
+				}
+			};
+		}
 	});
 
 	function handleClick() {

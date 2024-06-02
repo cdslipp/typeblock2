@@ -1,4 +1,3 @@
-<!--TypeBlock.svelte-->
 <script>
 	import { browser } from '$app/environment';
 	import Block from './Block.svelte';
@@ -20,38 +19,27 @@
         <h2>Contributing</h2>
         <p>Contributions are welcome! Please read the contribution guide to learn how you can contribute to this project.</p>
     </section>
-</article>`; // Your HTML document as string
+</article>`; // Your HTML document as a string
+
 	let blocks = $state([]);
 
-	if (blocks.length === 0) {
+	function parseHTMLDocument(html) {
+		const parser = new DOMParser();
+		const doc = parser.parseFromString(html, 'text/html');
+		const sections = doc.querySelectorAll('section');
+		blocks = Array.from(sections).map((section, index) => {
+			return {
+				id: index + 1,
+				content: section.innerHTML
+			};
+		});
+	}
+
+	if (browser) {
 		parseHTMLDocument(documentHTML);
 	}
 
-	let editorValue = $state('This is the inital value');
-
 	let activeBlockId = $state(null);
-
-	function parseHTMLDocument(html) {
-		if (browser) {
-			const parser = new DOMParser();
-			const doc = parser.parseFromString(html, 'text/html');
-			const sections = doc.querySelectorAll('section');
-			blocks = Array.from(sections).map((section, index) => {
-				return {
-					id: index + 1,
-					content: section.innerHTML
-				};
-			});
-		}
-	}
-
-	if (browser) {
-		// Existing window event listener logic here...
-	}
-	if (browser) {
-		// Listen to global keypresses to navigate blocks or create new ones
-		window.addEventListener('keydown', handleKeyDown);
-	}
 
 	function handleKeyDown(event) {
 		if (event.key === 'Enter') {
@@ -61,12 +49,21 @@
 			blocks = [...blocks.slice(0, newBlockIndex), newBlock, ...blocks.slice(newBlockIndex)];
 			activeBlockId = newBlock.id;
 		}
-		// Handle other global shortcuts
 	}
 
-	// This function is triggered on block click.
+	if (browser) {
+		window.addEventListener('keydown', handleKeyDown);
+	}
+
+	function handleValueChange(id, newValue) {
+		const updatedBlocks = blocks.map((block) =>
+			block.id === id ? { ...block, content: newValue } : block
+		);
+		blocks = updatedBlocks;
+	}
+
 	function setActiveBlock(id) {
-		activeBlockId = id; // Reactive assignment triggers UI updates.
+		activeBlockId = id;
 	}
 
 	$effect(() => {
@@ -80,15 +77,17 @@
 </script>
 
 <div id="typeblock">
-	{#each blocks as block (block.id)}
-		<!-- {block.content} -->
-		<Block
-			{block}
-			active={block.id === activeBlockId}
-			on:valueChange={(e) => handleValueChange(block.id, e.detail)}
-			on:setActiveBlock={() => setActiveBlock(block.id)}
-		/>
-	{/each}
+	{#if browser}
+		{#each blocks as block (block.id)}
+			<Block
+				{block}
+				value={block.content}
+				active={block.id === activeBlockId}
+				on:valueChange={(e) => handleValueChange(block.id, e.detail)}
+				on:setActiveBlock={() => setActiveBlock(block.id)}
+			/>
+		{/each}
+	{/if}
 </div>
 
 <style>
