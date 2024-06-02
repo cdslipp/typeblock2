@@ -30,7 +30,8 @@
 		blocks = Array.from(sections).map((section, index) => {
 			return {
 				id: index + 1,
-				content: section.innerHTML
+				content: section.innerHTML,
+				position: index // Add position
 			};
 		});
 	}
@@ -66,14 +67,27 @@
 		activeBlockId = id;
 	}
 
-	$effect(() => {
-		if (activeBlockId !== null) {
-			const activeBlockIndex = blocks.findIndex((block) => block.id === activeBlockId);
-			if (activeBlockIndex !== -1) {
-				blocks[activeBlockIndex].content = editorValue;
-			}
+	function handleDragStart(event, id) {
+		event.dataTransfer.setData('text/plain', id);
+		event.dataTransfer.effectAllowed = 'move';
+	}
+
+	function handleDragOver(event) {
+		event.preventDefault(); // Necessary to allow a drop
+		event.dataTransfer.dropEffect = 'move';
+	}
+
+	function handleDrop(event, targetId) {
+		event.preventDefault();
+		const sourceId = +event.dataTransfer.getData('text/plain');
+		if (sourceId !== targetId) {
+			const sourceIndex = blocks.findIndex((block) => block.id === sourceId);
+			const targetIndex = blocks.findIndex((block) => block.id === targetId);
+			const [movedBlock] = blocks.splice(sourceIndex, 1);
+			blocks.splice(targetIndex, 0, movedBlock);
+			blocks = blocks.map((block, index) => ({ ...block, position: index }));
 		}
-	});
+	}
 </script>
 
 <div id="typeblock">

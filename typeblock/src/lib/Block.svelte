@@ -58,7 +58,14 @@
 	}
 </script>
 
-<div class="block" on:click={handleClick}>
+<div
+	class="block"
+	on:click={handleClick}
+	draggable="true"
+	on:dragstart={(event) => dispatch('dragstart', { event, id: block.id })}
+	on:dragover={(event) => dispatch('dragover', { event })}
+	on:drop={(event) => dispatch('drop', { event, id: block.id })}
+>
 	{#if editing}
 		<div class="editorContainer">
 			<trix-toolbar id="toolbar"></trix-toolbar>
