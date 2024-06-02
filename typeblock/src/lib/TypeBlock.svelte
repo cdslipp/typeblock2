@@ -1,3 +1,4 @@
+<!--TypeBlock.svelte-->
 <script>
 	import { browser } from '$app/environment';
 	import Block from './Block.svelte';
@@ -20,13 +21,11 @@
         <p>Contributions are welcome! Please read the contribution guide to learn how you can contribute to this project.</p>
     </section>
 </article>`; // Your HTML document as string
-	let blocks = $state([]);
+	let blocks = $state([{ id: 1, content: 'Test' }]);
+
+	let editorValue = $state('This is the inital value');
 
 	let activeBlockId = $state(null);
-
-	$effect(() => {
-		parseHTMLDocument(documentHTML);
-	});
 
 	function parseHTMLDocument(html) {
 		const parser = new DOMParser();
@@ -63,12 +62,22 @@
 	function setActiveBlock(id) {
 		activeBlockId = id; // Reactive assignment triggers UI updates.
 	}
+
+	$effect(() => {
+		if (activeBlockId !== null) {
+			const activeBlockIndex = blocks.findIndex((block) => block.id === activeBlockId);
+			if (activeBlockIndex !== -1) {
+				blocks[activeBlockIndex].content = editorValue;
+			}
+		}
+	});
 </script>
 
 <div id="typeblock">
 	{#each blocks as block (block.id)}
+		<!-- {block.content} -->
 		<Block
-			{block}
+			bind:value={editorValue}
 			key={block.id}
 			active={block.id === activeBlockId}
 			on:setActiveBlock={() => setActiveBlock(block.id)}
